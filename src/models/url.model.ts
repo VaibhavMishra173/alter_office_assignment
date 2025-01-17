@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import type { Url } from '../types/index.js';
+import type { Url } from '../types/index';
 
 const urlSchema = new Schema<Url>(
   {
@@ -33,10 +33,5 @@ const urlSchema = new Schema<Url>(
     timestamps: true  // Automatically adds createdAt and updatedAt fields
   }
 );
-
-
-// Indexes for faster lookup
-urlSchema.index({ shortUrl: 1 });
-urlSchema.index({ alias: 1 });
 
 export const UrlModel = mongoose.model<Url>('Url', urlSchema);

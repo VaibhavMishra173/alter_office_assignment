@@ -26,10 +26,5 @@ const userSchema = new Schema<User>(
     timestamps: true  // Automatically adds createdAt and updatedAt fields
   }
 );
-// Add indexes for faster querying on googleId and email
-
-userSchema.index({ googleId: 1 });
-userSchema.index({ email: 1 });
-
 
 export const UserModel = mongoose.model<User>('User', userSchema);
