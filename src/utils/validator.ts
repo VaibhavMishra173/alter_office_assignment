@@ -1,4 +1,4 @@
-const validateUrl = (url) => {
+const validateUrl = (url: string) => {
   try {
     new URL(url);
     return true;
@@ -7,7 +7,7 @@ const validateUrl = (url) => {
   }
 };
 
-const validateAlias = (alias) => {
+const validateAlias = (alias: string) => {
   const aliasRegex = /^[a-zA-Z0-9-_]+$/;
   return aliasRegex.test(alias);
 };

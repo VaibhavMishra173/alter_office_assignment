@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from 'passport';
-import { googleCallback } from '../controllers/auth.controller';
+import AuthController  from '../controllers/auth.controller';
 
 const router = Router();
 
@@ -10,7 +10,7 @@ router.get('/google',
 
 router.get('/google/callback',
   authenticate('google', { session: false }),
-  googleCallback
+  AuthController.googleCallback
 );
 
 export default router;

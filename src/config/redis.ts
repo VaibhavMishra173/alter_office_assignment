@@ -1,0 +1,34 @@
+import Redis from 'ioredis';
+import logger from '../utils/logger';
+
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  throw new Error('REDIS_URL environment variable is not set');
+}
+
+// Create a Redis client instance using the redis URL
+const redis = new Redis(redisUrl);
+
+redis.on('connect', () => {
+  logger.info('Redis connected successfully');
+});
+
+redis.on('error', (error) => {
+  logger.error('Redis connection error:', error);
+});
+
+// Optionally, you can also listen to other events for better error handling
+redis.on('ready', () => {
+  logger.info('Redis client is ready');
+});
+
+redis.on('end', () => {
+  logger.info('Redis connection ended');
+});
+
+redis.on('reconnecting', () => {
+  logger.info('Redis reconnecting...');
+});
+
+export default redis;

@@ -1,55 +1,115 @@
-// services/analytics.service.js
-import Analytics,{ aggregate } from '../models/analytics.model';
-import { find } from '../models/url.model';
-import redis from '../config/redis';
 import { Types } from 'mongoose';
+import { AnalyticsModel } from '../models/analytics.model';
+import { UrlModel } from '../models/url.model';
+import redis from '../config/redis';
+import { UAParser } from 'ua-parser-js';
+import crypto from 'crypto';
+
+interface LocationInfo {
+  country: string;
+  city: string;
+  coordinates: [number, number];
+}
+
+interface ClicksByDate {
+  date: string;
+  clicks: number;
+}
+
+interface OSStats {
+  osName: string;
+  uniqueClicks: number;
+  uniqueUsers: number;
+}
+
+interface DeviceStats {
+  deviceName: string;
+  uniqueClicks: number;
+  uniqueUsers: number;
+}
+
+interface AnalyticsResponse {
+  totalClicks: number;
+  uniqueUsers: number;
+  clicksByDate: ClicksByDate[];
+  osType: OSStats[];
+  deviceType: DeviceStats[];
+}
+
+interface TopicAnalyticsResponse extends AnalyticsResponse {
+  urls: Array<{
+    shortUrl: string;
+    totalClicks: number;
+    uniqueUsers: number;
+  }>;
+}
+
+interface OverallAnalyticsResponse extends AnalyticsResponse {
+  totalUrls: number;
+}
 
 class AnalyticsService {
-  static async trackVisit(urlId, req) {
-    const userAgent = req.headers['user-agent'];
+  
+  static async incrementCachedMetrics(urlId: Types.ObjectId): Promise<void> {
+    // Assuming you are using Redis or a similar caching service for this
+    const redisKey = `url_metrics:${urlId}`;
+    const currentMetrics = await redis.get(redisKey);
+    
+    if (currentMetrics) {
+      // Assuming you store metrics as a JSON object
+      const metrics = JSON.parse(currentMetrics);
+      metrics.totalClicks += 1;
+      await redis.set(redisKey, JSON.stringify(metrics));
+    } else {
+      // If no cached data exists, initialize new metrics
+      const metrics = { totalClicks: 1, uniqueUsers: 0 };
+      await redis.set(redisKey, JSON.stringify(metrics));
+    }
+  }  
+
+  static async trackVisit(urlId: string, req: any): Promise<void> {
+    const ObjUrlId = new Types.ObjectId(urlId)
+    const userAgent = req.headers['user-agent'] as string;
     const parser = new UAParser(userAgent);
     const deviceInfo = parser.getResult();
 
-    const analytics = new Analytics({
-      urlId,
+    const analytics = new AnalyticsModel({
+      ObjUrlId,
       userAgent,
       ipAddress: req.ip,
-      deviceType: deviceInfo.device.type || 'unknown',
-      osType: deviceInfo.os.name || 'unknown',
+      deviceType: deviceInfo.device?.type || 'unknown',
+      osType: deviceInfo.os?.name || 'unknown',
       uniqueVisitorId: this.generateVisitorId(req),
-      location: await this.getLocationInfo(req.ip)
+      location: await this.getLocationInfo(req.ip),
     });
 
     await analytics.save();
-    await this.incrementCachedMetrics(urlId);
+    await this.incrementCachedMetrics(ObjUrlId);
   }
 
-  static generateVisitorId(req) {
+  static generateVisitorId(req: any): string {
     return crypto
       .createHash('md5')
       .update(req.ip + req.headers['user-agent'])
       .digest('hex');
   }
 
-  static async getLocationInfo(ip) {
-    // Implement IP geolocation using a service like MaxMind or similar
-    // This is a placeholder implementation
+  static async getLocationInfo(ip: string): Promise<LocationInfo> {
+    // Placeholder for IP geolocation
     return {
       country: 'Unknown',
       city: 'Unknown',
-      coordinates: [0, 0]
+      coordinates: [0, 0],
     };
   }
 
-  static async getUrlAnalytics(urlId) {
+  static async getUrlAnalytics(urlId: string): Promise<AnalyticsResponse> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const ObjUrlId = new Types.ObjectId(urlId)
     const pipeline = [
-      { $match: { 
-        urlId: Types.ObjectId(urlId),
-        timestamp: { $gte: sevenDaysAgo }
-      }},
+      { $match: { ObjUrlId, timestamp: { $gte: sevenDaysAgo } } },
       {
         $facet: {
           summary: [
@@ -57,50 +117,50 @@ class AnalyticsService {
               $group: {
                 _id: null,
                 totalClicks: { $sum: 1 },
-                uniqueUsers: { $addToSet: '$uniqueVisitorId' }
-              }
-            }
+                uniqueUsers: { $addToSet: '$uniqueVisitorId' },
+              },
+            },
           ],
           clicksByDate: [
             {
               $group: {
                 _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-                clicks: { $sum: 1 }
-              }
+                clicks: { $sum: 1 },
+              },
             },
-            { $sort: { '_id': 1 } }
+            { $sort: { _id: 1 } },
           ],
           osStats: [
             {
               $group: {
                 _id: '$osType',
                 uniqueClicks: { $sum: 1 },
-                uniqueUsers: { $addToSet: '$uniqueVisitorId' }
-              }
-            }
+                uniqueUsers: { $addToSet: '$uniqueVisitorId' },
+              },
+            },
           ],
           deviceStats: [
             {
               $group: {
                 _id: '$deviceType',
                 uniqueClicks: { $sum: 1 },
-                uniqueUsers: { $addToSet: '$uniqueVisitorId' }
-              }
-            }
-          ]
-        }
-      }
+                uniqueUsers: { $addToSet: '$uniqueVisitorId' },
+              },
+            },
+          ],
+        },
+      },
     ];
 
-    const results = await aggregate(pipeline);
+    const results = await AnalyticsModel.aggregate(pipeline as any);
     return this.formatAnalyticsResponse(results[0]);
   }
 
-  static async getTopicAnalytics(topic, userId) {
+  static async getTopicAnalytics(topic: string, userId: string): Promise<any> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const urls = await find({ topic, userId });
+    const urls = await UrlModel.find({ topic, userId });
     const urlIds = urls.map(url => url._id);
 
     const pipeline = [
@@ -124,7 +184,7 @@ class AnalyticsService {
           clicksByDate: [
             {
               $group: {
-                _id: { 
+                _id: {
                   date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
                   urlId: '$urlId'
                 },
@@ -152,15 +212,15 @@ class AnalyticsService {
       }
     ];
 
-    const results = await aggregate(pipeline);
+    const results = await AnalyticsModel.aggregate(pipeline as any);
     return this.formatTopicAnalyticsResponse(results[0], urls);
   }
 
-  static async getOverallAnalytics(userId) {
+  static async getOverallAnalytics(userId: string): Promise<any> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const urls = await find({ userId });
+    const urls = await UrlModel.find({ userId });
     const urlIds = urls.map(url => url._id);
 
     const pipeline = [
@@ -212,24 +272,24 @@ class AnalyticsService {
       }
     ];
 
-    const results = await aggregate(pipeline);
+    const results = await AnalyticsModel.aggregate(pipeline as any);
     return this.formatOverallAnalyticsResponse(results[0], urls);
   }
 
-  static formatAnalyticsResponse(data) {
+  static formatAnalyticsResponse(data: any): any {
     return {
       totalClicks: data.summary[0]?.totalClicks || 0,
       uniqueUsers: data.summary[0]?.uniqueUsers.length || 0,
-      clicksByDate: data.clicksByDate.map(item => ({
+      clicksByDate: data.clicksByDate.map((item: any) => ({
         date: item._id,
         clicks: item.clicks
       })),
-      osType: data.osStats.map(item => ({
+      osType: data.osStats.map((item: any) => ({
         osName: item._id,
         uniqueClicks: item.uniqueClicks,
         uniqueUsers: item.uniqueUsers.length
       })),
-      deviceType: data.deviceStats.map(item => ({
+      deviceType: data.deviceStats.map((item: any) => ({
         deviceName: item._id,
         uniqueClicks: item.uniqueClicks,
         uniqueUsers: item.uniqueUsers.length
@@ -237,16 +297,16 @@ class AnalyticsService {
     };
   }
 
-  static formatTopicAnalyticsResponse(data, urls) {
+  static formatTopicAnalyticsResponse(data: any, urls: any[]): any {
     return {
       totalClicks: data.summary[0]?.totalClicks || 0,
       uniqueUsers: data.summary[0]?.uniqueUsers.length || 0,
-      clicksByDate: data.clicksByDate.map(item => ({
+      clicksByDate: data.clicksByDate.map((item: any) => ({
         date: item._id,
         clicks: item.totalClicks
       })),
-      urls: urls.map(url => {
-        const stats = data.urlStats.find(stat => 
+      urls: urls.map((url: any) => {
+        const stats = data.urlStats.find((stat: any) =>
           stat._id.toString() === url._id.toString()
         );
         return {
@@ -258,21 +318,21 @@ class AnalyticsService {
     };
   }
 
-  static formatOverallAnalyticsResponse(data, urls) {
+  static formatOverallAnalyticsResponse(data: any, urls: any[]): any {
     return {
       totalUrls: urls.length,
       totalClicks: data.summary[0]?.totalClicks || 0,
       uniqueUsers: data.summary[0]?.uniqueUsers.length || 0,
-      clicksByDate: data.clicksByDate.map(item => ({
+      clicksByDate: data.clicksByDate.map((item: any) => ({
         date: item._id,
         clicks: item.clicks
       })),
-      osType: data.osStats.map(item => ({
+      osType: data.osStats.map((item: any) => ({
         osName: item._id,
         uniqueClicks: item.uniqueClicks,
         uniqueUsers: item.uniqueUsers.length
       })),
-      deviceType: data.deviceStats.map(item => ({
+      deviceType: data.deviceStats.map((item: any) => ({
         deviceName: item._id,
         uniqueClicks: item.uniqueClicks,
         uniqueUsers: item.uniqueUsers.length
@@ -280,5 +340,4 @@ class AnalyticsService {
     };
   }
 }
-
 export default AnalyticsService;

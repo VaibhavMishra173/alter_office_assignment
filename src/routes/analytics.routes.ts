@@ -1,22 +1,22 @@
 import { Router } from 'express';
-import { getUrlAnalytics,getTopicAnalytics,getOverallAnalytics } from '../controllers/analytics.controller';
+import AnalyticsController from '../controllers/analytics.controller';
 import authMiddleware from '../middleware/auth.middleware';
 
 const router = Router();
 
 router.get('/url/:alias', 
   authMiddleware, 
-  getUrlAnalytics
+  AnalyticsController.getUrlAnalytics
 );
 
 router.get('/topic/:topic', 
   authMiddleware, 
-  getTopicAnalytics
+  AnalyticsController.getTopicAnalytics
 );
 
 router.get('/overall', 
   authMiddleware, 
-  getOverallAnalytics
+  AnalyticsController.getOverallAnalytics
 );
 
 export default router;
