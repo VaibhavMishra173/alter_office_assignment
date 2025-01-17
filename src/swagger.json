@@ -1,0 +1,182 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "URL Shortener API",
+    "version": "1.0.0",
+    "description": "API for URL shortening service with analytics"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "UrlCreate": {
+        "type": "object",
+        "required": ["longUrl"],
+        "properties": {
+          "longUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "customAlias": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string",
+            "enum": ["acquisition", "activation", "retention"]
+          }
+        }
+      },
+      "UrlResponse": {
+        "type": "object",
+        "properties": {
+          "shortUrl": {
+            "type": "string"
+          },
+          "longUrl": {
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalyticsResponse": {
+        "type": "object",
+        "properties": {
+          "totalClicks": {
+            "type": "number"
+          },
+          "uniqueUsers": {
+            "type": "number"
+          },
+          "clicksByDate": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "clicks": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "osType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "osName": {
+                  "type": "string"
+                },
+                "uniqueClicks": {
+                  "type": "number"
+                },
+                "uniqueUsers": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "deviceType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "deviceName": {
+                  "type": "string"
+                },
+                "uniqueClicks": {
+                  "type": "number"
+                },
+                "uniqueUsers": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/shorten": {
+      "post": {
+        "summary": "Create a short URL",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UrlCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "URL shortened successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UrlResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/{alias}": {
+      "get": {
+        "summary": "Get analytics for a specific URL",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "alias",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Development server"
+          }
+        }
+      }
+    }
+  }
+}
