@@ -1,15 +1,15 @@
 import { Router } from 'express';
-import { authenticate } from 'passport';
+import passport from 'passport';
 import AuthController  from '../controllers/auth.controller';
 
 const router = Router();
 
 router.get('/google',
-  authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 router.get('/google/callback',
-  authenticate('google', { session: false }),
+  passport.authenticate('google', { session: false }),
   AuthController.googleCallback
 );
 

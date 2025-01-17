@@ -2,7 +2,7 @@ import express, { Application, Request, Response, NextFunction, json } from 'exp
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { initialize } from 'passport';
+import passport from 'passport';
 import { serve, setup } from 'swagger-ui-express';
 import swaggerDocument from './swagger.json';
 
@@ -41,10 +41,10 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(json());
-// app.use(initialize());
+app.use(passport.initialize());
 
 // Routes
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/urls', urlRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api-docs', serve, setup(swaggerDocument));
