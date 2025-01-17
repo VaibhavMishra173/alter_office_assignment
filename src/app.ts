@@ -7,7 +7,7 @@ import { serve, setup } from 'swagger-ui-express';
 import swaggerDocument from './swagger.json';
 
 import connectDB from './config/database';
-import redis from './config/redis'; // Import the redis connection
+import redis from './config/redis';
 
 import logger from './utils/logger';
 
@@ -41,23 +41,10 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(json());
-app.use(initialize());
+// app.use(initialize());
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/urls', urlRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api-docs', serve, setup(swaggerDocument));
-
-// Middleware
-app.use(helmet());
-app.use(cors());
-app.use(morgan('combined', { stream: { write: (message: string) => logger.info(message.trim()) } }));
-app.use(express.json());
-app.use(initialize());
-
-// Routes
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes);
 app.use('/api/urls', urlRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api-docs', serve, setup(swaggerDocument));
