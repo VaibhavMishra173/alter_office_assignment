@@ -21,7 +21,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Ensure profile.emails and profile.emails[0] exist
+        logger.debug('Google Strategy Initialized');
         const email = profile.emails?.[0]?.value;
         if (!email) {
           logger.error('Google authentication error: No email found for the user');

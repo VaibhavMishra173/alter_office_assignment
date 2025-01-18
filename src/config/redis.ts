@@ -18,7 +18,6 @@ redis.on('error', (error) => {
   logger.error('Redis connection error:', error);
 });
 
-// Optionally, you can also listen to other events for better error handling
 redis.on('ready', () => {
   logger.info('Redis client is ready');
 });

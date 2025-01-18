@@ -11,7 +11,7 @@ interface IRequest extends Request {
 const rateLimitMiddleware = async (req: IRequest, res: Response, next: NextFunction): Promise<any> => {
   try {
     // Define the rate limit key based on the user ID
-    const key = `rateLimit:${req.user?.id}`; // Safe optional chaining for user
+    const key = `rateLimit:${req.user?.id}`;
     if (!key || !req.user?.id) {
       return res.status(400).json({ message: 'User ID is required for rate limiting.' });
     }
