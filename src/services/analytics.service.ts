@@ -74,7 +74,7 @@ class AnalyticsService {
     const deviceInfo = parser.getResult();
 
     const analytics = new AnalyticsModel({
-      ObjUrlId,
+      urlId: ObjUrlId,
       userAgent,
       ipAddress: req.ip,
       deviceType: deviceInfo.device?.type || 'unknown',
@@ -109,7 +109,7 @@ class AnalyticsService {
 
     const ObjUrlId = new Types.ObjectId(urlId)
     const pipeline = [
-      { $match: { ObjUrlId, timestamp: { $gte: sevenDaysAgo } } },
+      { $match: { urlId: ObjUrlId, timestamp: { $gte: sevenDaysAgo } } },
       {
         $facet: {
           summary: [

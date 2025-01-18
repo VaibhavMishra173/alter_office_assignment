@@ -222,7 +222,7 @@
         }
       }
     },
-    "/api/analytics/{alias}": {
+    "/api/analytics/url/{alias}": {
       "get": {
         "summary": "Get analytics by alias",
         "security": [
@@ -254,7 +254,7 @@
         }
       }
     },
-    "/api/analytics/{topic}": {
+    "/api/analytics/topic/{topic}": {
       "get": {
         "summary": "Get analytics by topic",
         "security": [

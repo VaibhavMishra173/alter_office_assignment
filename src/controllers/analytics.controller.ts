@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import AnalyticsService from '../services/analytics.service';
 import logger from '../utils/logger';
+import UrlService from '../services/url.service';
 
 class AnalyticsController {
   /**
@@ -12,7 +13,9 @@ class AnalyticsController {
     try {
       const { alias } = req.params;
       logger.info(`Fetching analytics for URL alias: ${alias}`);
-      const analytics = await AnalyticsService.getUrlAnalytics(alias);
+      const urlObj = await UrlService.getUrlByAlias(alias);
+      const { urlId } = urlObj._id;
+      const analytics = await AnalyticsService.getUrlAnalytics(urlId);
       res.json(analytics);
     } catch (error) {
       logger.error('Error getting URL analytics:', error);

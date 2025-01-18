@@ -21,7 +21,7 @@ class UrlService {
 
   static async createShortUrl(userId: string, longUrl: string, customAlias = null, topic = null) {
     const alias = await this.generateUniqueAlias(customAlias);
-    const shortUrl = `${process.env.BASE_URL}/${alias}`;
+    const shortUrl = `${process.env.BASE_URL}/api/urls/${alias}`;
 
     const url = new UrlModel({
       longUrl,
@@ -49,6 +49,27 @@ class UrlService {
     await redis.set(`url:${alias}`, url.longUrl, 'EX', 86400);
     return url.longUrl;
   }
+
+  static async getUrlByAlias(alias: string) {
+    const cachedUrlObj = await redis.get(`urlObj:${alias}`);
+    if (cachedUrlObj) {
+      return JSON.parse(cachedUrlObj);
+    }
+  
+    // If not in cache, get from DB
+    const url = await UrlModel.findOne({ alias });
+    if (!url) return null;
+  
+    await redis.set(
+      `urlObj:${alias}`,
+      JSON.stringify(url),
+      'EX',
+      86400
+    );
+  
+    return url;
+  }
+  
 }
 
 export default UrlService;
