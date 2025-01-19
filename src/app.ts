@@ -87,7 +87,10 @@ app.get('/', (req, res) => {
 
 
 app.get('/profile', async (req: any, res) => {
-  const token = req.query.token;  // Get token from the query string
+  const token = req.query.token;
+  if (!token) {
+    return res.status(400).json({ error: 'Token is required' });
+  }
   const decoded = verify(token, process.env.JWT_SECRET as string) as JwtPayload;
   // Retrieve user by ID from the decoded token
   const user = await UserModel.findById(decoded.id);
