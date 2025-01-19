@@ -24,6 +24,7 @@ class AuthController {
         { expiresIn: '24h' }
       );
 
+      logger.info('Redirecting to profile with token');
       // Send the token as a response
       res.redirect(`/profile?token=${token}`);
     } catch (error) {
