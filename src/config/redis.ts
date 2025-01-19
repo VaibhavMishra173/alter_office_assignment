@@ -8,7 +8,7 @@ if (!redisUrl) {
 }
 
 // Create a Redis client instance using the redis URL
-const redis = new Redis(redisUrl);
+const redis = new Redis(process.env.REDIS_URL + '?family=0');
 
 redis.on('connect', () => {
   logger.info('Redis connected successfully');
