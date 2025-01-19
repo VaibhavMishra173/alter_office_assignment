@@ -1,4 +1,3 @@
-
 version: '3'
 services:
   app:
@@ -6,11 +5,21 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/urlshortener
+      - MONGODB_URI=mongodb://root:rootpassword@mongo:27017/urlshortener?authSource=admin
       - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - BASE_URL=${BASE_URL}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX}
     depends_on:
       - mongo
       - redis
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev"]
 
   mongo:
     image: mongo:latest
@@ -18,6 +27,10 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootpassword
+      - MONGO_INITDB_DATABASE=urlshortener
 
   redis:
     image: redis:alpine

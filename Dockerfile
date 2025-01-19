@@ -9,7 +9,7 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install Node.js dependencies
+# Install Node.js dependencies (including dev dependencies)
 RUN npm install
 
 # Copy the rest of the application
@@ -18,5 +18,5 @@ COPY . .
 # Expose application port
 EXPOSE 3000
 
-# Default command
+# Default command (run in dev mode)
 CMD ["npm", "run", "dev"]
