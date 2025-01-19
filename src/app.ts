@@ -54,15 +54,6 @@ app.get('/', (req, res) => {
     
     <p><strong>Overview:</strong></p>
     <p>The Advanced URL Shortener API is a scalable, containerized application for creating, managing, and analyzing short URLs. It includes features like Google Sign-In for authentication, detailed analytics, custom aliases, and rate limiting.</p>
-    <p>The API enables users to:</p>
-    <ul>
-      <li>Create short URLs with custom aliases and categorize them into topics.</li>
-      <li>Track detailed analytics such as total clicks, unique users, and device/OS-based stats.</li>
-      <li>Group links under specific topics and analyze their performance.</li>
-      <li>Access overall performance metrics for all URLs created by a user.</li>
-      <li>Redirect short URLs to their original long URLs.</li>
-    </ul>
-    <p>The app is designed for scalability, performance, and ease of deployment, using modern web technologies.</p>
 
     <h2>Features</h2>
     <ul>
