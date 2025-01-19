@@ -25,7 +25,7 @@ class AuthController {
       );
 
       // Send the token as a response
-      res.status(200).json({ token });
+      res.redirect(`/profile?token=${token}`);
     } catch (error) {
       logger.error('Error in Google callback:', error);
       res.status(500).json({ message: 'Internal server error.' });

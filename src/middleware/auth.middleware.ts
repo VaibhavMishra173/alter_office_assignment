@@ -18,7 +18,7 @@ const authMiddleware = async (req: IRequest, res: Response, next: NextFunction):
 
     // Verify token and extract decoded data
     const decoded = verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-    
+
     // Retrieve user by ID from the decoded token
     const user = await UserModel.findById(decoded.id);
     

@@ -12,6 +12,8 @@ import logger from './utils/logger';
 import authRoutes from './routes/auth.routes';
 import urlRoutes from './routes/url.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import { JwtPayload, verify } from 'jsonwebtoken';
+import { UserModel } from './models/user.model';
 
 // Initialize app
 const app = express();
@@ -50,12 +52,34 @@ app.get('/', (req, res) => {
   res.send(`<h1>Welcome to the app!</h1><a href="/api/auth/google">Login with Google</a>`);
 });
 
-app.get('/profile', authMiddleware, (req: any, res) => {
+app.get('/profile', async (req: any, res) => {
+  const token = req.query.token;  // Get token from the query string
+  const decoded = verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+  // Retrieve user by ID from the decoded token
+  const user = await UserModel.findById(decoded.id);
+
   if (req.isAuthenticated()) {
-    res.send(`<h1>Hello, ${req?.user?.name}</h1><p>Email: ${req?.user?.email}</p>`);
+    res.send(`
+      <h1>Hello, ${user?.name}</h1>
+      <p>Email: ${user?.email}</p>
+      <p>Token: <span id="token">${token}</span></p> <!-- Display token here -->
+      <button id="copyButton" onclick="copyToClipboard()">Copy</button> <!-- Button to copy token -->
+      <p><a href="/api-docs">View Swagger Documentation</a></p>  <!-- Link to Swagger -->
+
+      <script>
+        function copyToClipboard() {
+          const tokenText = document.getElementById('token').innerText;
+          navigator.clipboard.writeText(tokenText).then(() => {
+            alert('Token copied to clipboard!');
+          }).catch(err => {
+            alert('Failed to copy token: ' + err);
+          });
+        }
+      </script>
+    `);
   } else {
     res.redirect('/');
-  }
+  }  
 });
 
 // Error handling middleware
