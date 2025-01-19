@@ -49,8 +49,51 @@ app.use('/api-docs', serve, setup(swaggerDocument));
 
 // Basic routes so keeping it here
 app.get('/', (req, res) => {
-  res.send(`<h1>Welcome to the app!</h1><a href="/api/auth/google">Login with Google</a>`);
+  res.send(`
+    <h1>Welcome to the Advanced URL Shortener API!</h1>
+    
+    <p><strong>Overview:</strong></p>
+    <p>The Advanced URL Shortener API is a scalable, containerized application for creating, managing, and analyzing short URLs. It includes features like Google Sign-In for authentication, detailed analytics, custom aliases, and rate limiting.</p>
+    <p>The API enables users to:</p>
+    <ul>
+      <li>Create short URLs with custom aliases and categorize them into topics.</li>
+      <li>Track detailed analytics such as total clicks, unique users, and device/OS-based stats.</li>
+      <li>Group links under specific topics and analyze their performance.</li>
+      <li>Access overall performance metrics for all URLs created by a user.</li>
+      <li>Redirect short URLs to their original long URLs.</li>
+    </ul>
+    <p>The app is designed for scalability, performance, and ease of deployment, using modern web technologies.</p>
+
+    <h2>Features</h2>
+    <ul>
+      <li>User Authentication: Secure authentication via Google Sign-In.</li>
+      <li>Custom Aliases: Optional custom aliases for short URLs.</li>
+      <li>Detailed Analytics: Insights into total clicks, unique users, OS/device breakdown, and more.</li>
+      <li>Topic-based Grouping: Group URLs under topics for easier management.</li>
+      <li>Rate Limiting: Prevent abuse of API endpoints by limiting requests.</li>
+      <li>Caching: Redis caching for faster access and reduced database load.</li>
+      <li>Dockerized: Easily deployable using Docker.</li>
+    </ul>
+
+    <h2>Technologies Used</h2>
+    <p><strong>Backend:</strong> Node.js (with TypeScript for type safety), Express.js (framework for building REST APIs)</p>
+    <p><strong>Database:</strong> MongoDB (scalable, NoSQL database)</p>
+    <p><strong>Caching:</strong> Redis (in-memory data structure store)</p>
+    <p><strong>Authentication:</strong> Google Sign-In (secure and easy login mechanism)</p>
+    <p><strong>Deployment:</strong> Docker (containerization for consistent environments), Railway.app (cloud hosting for the deployed app)</p>
+
+    <h2>Rate Limiting Configuration</h2>
+    <p>The API enforces rate limiting with the following settings:</p>
+    <ul>
+      <li><strong>RATE_LIMIT_WINDOW:</strong> 60 seconds (1 minute)</li>
+      <li><strong>RATE_LIMIT_MAX:</strong> 100 requests per window (you can make up to 100 requests in 60 seconds)</li>
+    </ul>
+    <p>This is designed to prevent abuse of the API and ensure fair usage for all users.</p>
+    
+    <a href="/api/auth/google">Login with Google</a>
+  `);
 });
+
 
 app.get('/profile', async (req: any, res) => {
   const token = req.query.token;  // Get token from the query string
