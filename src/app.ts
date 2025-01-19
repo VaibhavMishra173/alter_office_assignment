@@ -95,7 +95,11 @@ app.get('/profile', async (req: any, res) => {
   // Retrieve user by ID from the decoded token
   const user = await UserModel.findById(decoded.id);
 
+  logger.info('User retrieved, adding token in headers')
+  req.headers.authorization = 'Bearer ' + token;
+  
   if (req.isAuthenticated()) {
+    logger.info('User authenticated.')
     res.send(`
       <h1>Hello, ${user?.name}</h1>
       <p>Email: ${user?.email}</p>
@@ -115,6 +119,7 @@ app.get('/profile', async (req: any, res) => {
       </script>
     `);
   } else {
+    logger.info('User authentication failed, redirecting to home page.')
     res.redirect('/');
   }  
 });
