@@ -14,8 +14,7 @@ class AnalyticsController {
       const { alias } = req.params;
       logger.info(`Fetching analytics for URL alias: ${alias}`);
       const urlObj = await UrlService.getUrlByAlias(alias);
-      const { urlId } = urlObj._id;
-      const analytics = await AnalyticsService.getUrlAnalytics(urlId);
+      const analytics = await AnalyticsService.getUrlAnalytics(urlObj._id);
       res.json(analytics);
     } catch (error) {
       logger.error('Error getting URL analytics:', error);

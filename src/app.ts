@@ -85,43 +85,36 @@ app.get('/', (req, res) => {
   `);
 });
 
-
 app.get('/profile', async (req: any, res) => {
-  const token = req.query.token;
-  if (!token) {
-    return res.status(400).json({ error: 'Token is required' });
+  try {
+    const token = req.query.token ?? req.headers.authorization?.split('Bearer ')[1];
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    // Decode and verify the token
+    const decoded = verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+
+    // Retrieve user by ID from the decoded token
+    const user = await UserModel.findById(decoded.id);
+
+    if (user) {
+      logger.info('User retrieved, sending response');
+      res.send(`
+        <h1>Hello, ${user?.name}</h1>
+        <p>Email: ${user?.email}</p>
+        <p>Token: <span id="token">${token}</span></p> 
+
+        <p><a href="/api-docs">View Swagger Documentation</a></p>  <!-- Link to Swagger -->
+      `);
+    } else {
+      logger.info('User not found, redirecting to home page.');
+      res.redirect('/');
+    }
+  } catch (error) {
+    logger.error('Error occurred:', error);
+    res.status(401).json({ error: 'Invalid or expired token' });
   }
-  const decoded = verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-  // Retrieve user by ID from the decoded token
-  const user = await UserModel.findById(decoded.id);
-
-  logger.info('User retrieved, adding token in headers')
-  req.headers.authorization = 'Bearer ' + token;
-  
-  if (req.isAuthenticated()) {
-    logger.info('User authenticated.')
-    res.send(`
-      <h1>Hello, ${user?.name}</h1>
-      <p>Email: ${user?.email}</p>
-      <p>Token: <span id="token">${token}</span></p> <!-- Display token here -->
-      <button id="copyButton" onclick="copyToClipboard()">Copy</button> <!-- Button to copy token -->
-      <p><a href="/api-docs">View Swagger Documentation</a></p>  <!-- Link to Swagger -->
-
-      <script>
-        function copyToClipboard() {
-          const tokenText = document.getElementById('token').innerText;
-          navigator.clipboard.writeText(tokenText).then(() => {
-            alert('Token copied to clipboard!');
-          }).catch(err => {
-            alert('Failed to copy token: ' + err);
-          });
-        }
-      </script>
-    `);
-  } else {
-    logger.info('User authentication failed, redirecting to home page.')
-    res.redirect('/');
-  }  
 });
 
 // Error handling middleware

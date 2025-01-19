@@ -226,9 +226,9 @@
         }
       }
     },
-    "/api/analytics/url/{alias}": {
+    "/api/analytics/topic/{topic}": {
       "get": {
-        "summary": "Get analytics by alias",
+        "summary": "Get analytics by topic",
         "security": [
           {
             "bearerAuth": []
@@ -236,7 +236,7 @@
         ],
         "parameters": [
           {
-            "name": "alias",
+            "name": "topic",
             "in": "path",
             "required": true,
             "schema": {
@@ -258,9 +258,9 @@
         }
       }
     },
-    "/api/analytics/topic/{topic}": {
+    "/api/analytics/url/{alias}": {
       "get": {
-        "summary": "Get analytics by topic",
+        "summary": "Get analytics by alias",
         "security": [
           {
             "bearerAuth": []
@@ -268,7 +268,7 @@
         ],
         "parameters": [
           {
-            "name": "topic",
+            "name": "alias",
             "in": "path",
             "required": true,
             "schema": {

@@ -126,10 +126,6 @@ API Endpoints
 -   **POST** `/api/shorten`
 -   **Request Body**:
 
-    json
-
-    CopyEdit
-
     `{
       "longUrl": "https://example.com",
       "customAlias": "example",
@@ -137,10 +133,6 @@ API Endpoints
     }`
 
 -   **Response**:
-
-    json
-
-    CopyEdit
 
     `{
       "shortUrl": "http://localhost:3000/example",
@@ -160,10 +152,6 @@ API Endpoints
 
 -   **GET** `/api/analytics/{alias}`
 -   **Response**:
-
-    json
-
-    CopyEdit
 
     `{
       "totalClicks": 150,
@@ -218,19 +206,6 @@ Deployment
 
 * * * * *
 
-Testing
--------
-
-Run tests with:
-
-bash
-
-CopyEdit
-
-`npm run test`
-
-* * * * *
-
 Challenges and Solutions
 ------------------------
 
@@ -242,8 +217,7 @@ Challenges and Solutions
 
 Live Demo
 ---------
-<!-- TODO: -->
-The application is hosted at: 
+The application is hosted at: [Live Demo](https://alterofficeassignment-production.up.railway.app/)
 
 * * * * *
 
