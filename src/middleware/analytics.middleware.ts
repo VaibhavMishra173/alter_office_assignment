@@ -7,8 +7,7 @@ import logger from '../utils/logger';
 const trackVisit = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
     const urlObj = await UrlService.getUrlByAlias(req.params.alias);
-    const { urlId } = urlObj._id;
-    await AnalyticsService.trackVisit(urlId, req);
+    await AnalyticsService.trackVisit(urlObj._id, req);
     next();
   } catch (error) {
     logger.error('Error tracking visit:', error);

@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import { AnalyticsModel } from '../models/analytics.model';
 import { UrlModel } from '../models/url.model';
 import redis from '../config/redis';
@@ -49,12 +49,12 @@ interface OverallAnalyticsResponse extends AnalyticsResponse {
 }
 
 class AnalyticsService {
-  
+
   static async incrementCachedMetrics(urlId: Types.ObjectId): Promise<void> {
     // Assuming you are using Redis or a similar caching service for this
     const redisKey = `url_metrics:${urlId}`;
     const currentMetrics = await redis.get(redisKey);
-    
+
     if (currentMetrics) {
       // Assuming you store metrics as a JSON object
       const metrics = JSON.parse(currentMetrics);
@@ -65,16 +65,15 @@ class AnalyticsService {
       const metrics = { totalClicks: 1, uniqueUsers: 0 };
       await redis.set(redisKey, JSON.stringify(metrics));
     }
-  }  
+  }
 
-  static async trackVisit(urlId: string, req: any): Promise<void> {
-    const ObjUrlId = new Types.ObjectId(urlId)
+  static async trackVisit(urlId: Types.ObjectId, req: any): Promise<void> {
     const userAgent = req.headers['user-agent'] as string;
     const parser = new UAParser(userAgent);
     const deviceInfo = parser.getResult();
 
     const analytics = new AnalyticsModel({
-      urlId: ObjUrlId,
+      urlId,
       userAgent,
       ipAddress: req.ip,
       deviceType: deviceInfo.device?.type || 'unknown',
@@ -84,7 +83,7 @@ class AnalyticsService {
     });
 
     await analytics.save();
-    await this.incrementCachedMetrics(ObjUrlId);
+    await this.incrementCachedMetrics(urlId);
   }
 
   static generateVisitorId(req: any): string {
@@ -270,9 +269,9 @@ class AnalyticsService {
           ]
         }
       }
-    ];
+    ] as PipelineStage[];    
 
-    const results = await AnalyticsModel.aggregate(pipeline as any);
+    const results = await AnalyticsModel.aggregate(pipeline);
     return this.formatOverallAnalyticsResponse(results[0], urls);
   }
 
