@@ -5,8 +5,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI=mongodb://root:rootpassword@mongo:27017/urlshortener?authSource=admin
-      - REDIS_URL=redis://redis:6379
+      # For docker
+      # - MONGODB_URI=mongodb://root:rootpassword@mongo:27017/urlshortener?authSource=admin
+      # - REDIS_URL=redis://redis:6379
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_URL=${REDIS_URL}
       - JWT_SECRET=${JWT_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
